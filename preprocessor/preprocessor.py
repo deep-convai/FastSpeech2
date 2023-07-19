@@ -64,30 +64,34 @@ class Preprocessor:
 
         # Compute pitch, energy, duration, and mel-spectrogram
         speakers = {}
+        emotions = set()
         for i, speaker in enumerate(tqdm(os.listdir(self.in_dir))):
             speakers[speaker] = i
-            for wav_name in os.listdir(os.path.join(self.in_dir, speaker)):
-                if ".wav" not in wav_name:
-                    continue
-
-                basename = wav_name.split(".")[0]
-                tg_path = os.path.join(
-                    self.out_dir, "TextGrid", speaker, "{}.TextGrid".format(basename)
-                )
-                if os.path.exists(tg_path):
-                    ret = self.process_utterance(speaker, basename)
-                    if ret is None:
+            for j, emotion in enumerate(tqdm(os.listdir(os.path.join(self.in_dir, speaker)))):
+                emotions.add(emotion)
+                for wav_name in os.listdir(os.path.join(self.in_dir, speaker, emotion)):
+                    if ".wav" not in wav_name:
                         continue
-                    else:
-                        info, pitch, energy, n = ret
-                    out.append(info)
 
-                if len(pitch) > 0:
-                    pitch_scaler.partial_fit(pitch.reshape((-1, 1)))
-                if len(energy) > 0:
-                    energy_scaler.partial_fit(energy.reshape((-1, 1)))
+                    basename = wav_name.split(".")[0]
+                    tg_path = os.path.join(
+                        self.out_dir, "TextGrid", speaker, "{}.TextGrid".format(basename)
+                    )
+                    if os.path.exists(tg_path):
+                        ret = self.process_utterance(speaker, basename)
+                        if ret is None:
+                            continue
+                        else:
+                            info, pitch, energy, n = ret
+                        out.append(info)
 
-                n_frames += n
+                    if len(pitch) > 0:
+                        pitch_scaler.partial_fit(pitch.reshape((-1, 1)))
+                    if len(energy) > 0:
+                        energy_scaler.partial_fit(energy.reshape((-1, 1)))
+
+                    n_frames += n
+
 
         print("Computing statistic quantities ...")
         # Perform normalization if necessary
@@ -115,6 +119,10 @@ class Preprocessor:
         # Save files
         with open(os.path.join(self.out_dir, "speakers.json"), "w") as f:
             f.write(json.dumps(speakers))
+
+        emotions_dict = {emotion: i for i, emotion in enumerate(emotions)}
+        with open(os.path.join(self.out_dir, "emotions.json"), "w") as f:
+            f.write(json.dumps(emotions_dict))
 
         with open(os.path.join(self.out_dir, "stats.json"), "w") as f:
             stats = {

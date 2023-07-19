@@ -14,17 +14,18 @@ def prepare_align(config):
     sampling_rate = config["preprocessing"]["audio"]["sampling_rate"]
     max_wav_value = config["preprocessing"]["audio"]["max_wav_value"]
     cleaners = config["preprocessing"]["text"]["text_cleaners"]
+    filelist_fixed = open(f'{out_dir}/filelist.txt', 'w', encoding='utf-8')
     for speaker in tqdm(os.listdir(in_dir)):
-        for chapter in os.listdir(os.path.join(in_dir, speaker)):
-            for file_name in os.listdir(os.path.join(in_dir, speaker, chapter)):
+        for emotion in os.listdir(os.path.join(in_dir, speaker)):
+            for file_name in os.listdir(os.path.join(in_dir, speaker, emotion)):
                 if file_name[-4:] != ".wav":
                     continue
                 base_name = file_name[:-4]
                 text_path = os.path.join(
-                    in_dir, speaker, chapter, "{}.normalized.txt".format(base_name)
+                    in_dir, speaker, emotion, "{}.normalized.txt".format(base_name)
                 )
                 wav_path = os.path.join(
-                    in_dir, speaker, chapter, "{}.wav".format(base_name)
+                    in_dir, speaker, emotion, "{}.wav".format(base_name)
                 )
                 with open(text_path) as f:
                     text = f.readline().strip("\n")
@@ -43,3 +44,5 @@ def prepare_align(config):
                     "w",
                 ) as f1:
                     f1.write(text)
+                filelist_fixed.write("|".join([base_name, text, speaker, emotion]) + "\n")
+    filelist_fixed.close()
