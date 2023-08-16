@@ -1,7 +1,7 @@
 dataset: "RAVDESS"
 
 path:
-  corpus_path: "/Data/RAVDESS"
+  corpus_path: "../Corpus/RAVDESS"
   lexicon_path: "lexicon/ravdess-lexicon.txt"
   raw_path: "./raw_data/RAVDESS"
   preprocessed_path: "./preprocessed_data/RAVDESS"
