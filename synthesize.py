@@ -45,8 +45,8 @@ def preprocess_english(text, preprocess_config):
     phones = re.sub(r"\{[^\w\s]?\}", "{sp}", phones)
     phones = phones.replace("}{", " ")
 
-    print("Raw Text Sequence: {}".format(text))
-    print("Phoneme Sequence: {}".format(phones))
+#     print("Raw Text Sequence: {}".format(text))
+#     print("Phoneme Sequence: {}".format(phones))
     sequence = np.array(
         text_to_sequence(
             phones, preprocess_config["preprocessing"]["text"]["text_cleaners"]

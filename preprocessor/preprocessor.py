@@ -78,7 +78,7 @@ class Preprocessor:
                         self.out_dir, "TextGrid", speaker, "{}.TextGrid".format(basename)
                     )
                     if os.path.exists(tg_path):
-                        ret = self.process_utterance(speaker, basename)
+                        ret = self.process_utterance(speaker, emotion, basename)
                         if ret is None:
                             continue
                         else:
@@ -160,9 +160,9 @@ class Preprocessor:
 
         return out
 
-    def process_utterance(self, speaker, basename):
-        wav_path = os.path.join(self.in_dir, speaker, "{}.wav".format(basename))
-        text_path = os.path.join(self.in_dir, speaker, "{}.lab".format(basename))
+    def process_utterance(self, speaker, emotion, basename):
+        wav_path = os.path.join(self.in_dir, speaker, emotion, "{}.wav".format(basename))
+        text_path = os.path.join(self.in_dir, speaker, emotion, "{}.lab".format(basename))
         tg_path = os.path.join(
             self.out_dir, "TextGrid", speaker, "{}.TextGrid".format(basename)
         )
@@ -252,7 +252,7 @@ class Preprocessor:
         )
 
         return (
-            "|".join([basename, speaker, text, raw_text]),
+            "|".join([basename, speaker, emotion, text, raw_text]),
             self.remove_outlier(pitch),
             self.remove_outlier(energy),
             mel_spectrogram.shape[1],

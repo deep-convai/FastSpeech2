@@ -33,7 +33,7 @@ def prepare_align(config):
                     text = f.readline().strip("\n")
                 text = _clean_text(text, cleaners)
 
-                os.makedirs(os.path.join(out_dir, speaker), exist_ok=True)
+                os.makedirs(os.path.join(out_dir, speaker, emotion), exist_ok=True)
                 wav, _ = librosa.load(wav_path, sampling_rate)
                 wav = wav / max(abs(wav)) * max_wav_value
                 wavfile.write(
