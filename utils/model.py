@@ -39,7 +39,7 @@ def get_param_num(model):
     return num_param
 
 
-def get_vocoder(config, device):
+def get_vocoder(config, device, speaker_= None):
     name = config["vocoder"]["model"]
     speaker = config["vocoder"]["speaker"]
 
@@ -63,6 +63,8 @@ def get_vocoder(config, device):
             ckpt = torch.load("hifigan/generator_LJSpeech.pth.tar")
         elif speaker == "universal":
             ckpt = torch.load("hifigan/generator_universal.pth.tar")
+        if speaker_ is not None:
+            ckpt = torch.load("/workspace/nemo/vol/TTS_voices/FP_checkpoints/HifiGan--val_loss=0.3257-epoch=9479.ckpt")
         vocoder.load_state_dict(ckpt["generator"])
         vocoder.eval()
         vocoder.remove_weight_norm()
