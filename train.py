@@ -1,5 +1,6 @@
 import argparse
 import os
+import wandb
 
 import torch
 import yaml
@@ -19,6 +20,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def main(args, configs):
+    wandb.init(project=args.project_name, config=configs[0])
     print("Prepare training ...")
 
     preprocess_config, model_config, train_config = configs
@@ -108,7 +110,7 @@ def main(args, configs):
 
                     outer_bar.write(message1 + message2)
 
-                    log(train_logger, step, losses=losses)
+                    log(train_logger, step, losses=losses, logger_stage="training")
 
                 if step % synth_step == 0:
                     fig, wav_reconstruction, wav_prediction, tag = synth_one_sample(
@@ -122,6 +124,7 @@ def main(args, configs):
                         train_logger,
                         fig=fig,
                         tag="Training/step_{}_{}".format(step, tag),
+                        logger_stage="training"
                     )
                     sampling_rate = preprocess_config["preprocessing"]["audio"][
                         "sampling_rate"
@@ -131,12 +134,14 @@ def main(args, configs):
                         audio=wav_reconstruction,
                         sampling_rate=sampling_rate,
                         tag="Training/step_{}_{}_reconstructed".format(step, tag),
+                        logger_stage="training"
                     )
                     log(
                         train_logger,
                         audio=wav_prediction,
                         sampling_rate=sampling_rate,
                         tag="Training/step_{}_{}_synthesized".format(step, tag),
+                        logger_stage="training"
                     )
 
                 if step % val_step == 0:
@@ -185,6 +190,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t", "--train_config", type=str, required=True, help="path to train.yaml"
     )
+
+    parser.add_argument(
+        "-n","--project_name", type=str, required=False, help="name of the wandb project", default="FastSpeech2_training"
+    )
+    
     args = parser.parse_args()
 
     # Read Config

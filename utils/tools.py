@@ -1,5 +1,6 @@
 import os
 import json
+import wandb
 
 import torch
 import torch.nn.functional as F
@@ -70,7 +71,7 @@ def to_device(data, device):
 
 
 def log(
-    logger, step=None, losses=None, fig=None, audio=None, sampling_rate=22050, tag=""
+    logger, step=None, losses=None, fig=None, audio=None, sampling_rate=22050, tag="", logger_stage="training"
 ):
     if losses is not None:
         logger.add_scalar("Loss/total_loss", losses[0], step)
@@ -89,7 +90,25 @@ def log(
             audio / max(abs(audio)),
             sample_rate=sampling_rate,
         )
+    
+    log_dict = {}
+    
+    if losses is not None:
+        log_dict[logger_stage + "Loss/total_loss"] = losses[0]
+        log_dict[logger_stage + "Loss/mel_loss"] = losses[1]
+        log_dict[logger_stage + "Loss/mel_postnet_loss"] = losses[2]
+        log_dict[logger_stage + "Loss/pitch_loss"] = losses[3]
+        log_dict[logger_stage + "Loss/energy_loss"] = losses[4]
+        log_dict[logger_stage + "Loss/duration_loss"] = losses[5]
+        
+    if fig is not None:
+        log_dict[logger_stage + tag] = wandb.Image(fig)
 
+    if audio is not None:
+        norm_audio = audio / max(abs(audio))
+        log_dict[logger_stage + tag] = wandb.Audio(norm_audio, sample_rate=sampling_rate)
+    
+    wandb.log(log_dict, step=step)
 
 def get_mask_from_lengths(lengths, max_len=None):
     batch_size = lengths.shape[0]
