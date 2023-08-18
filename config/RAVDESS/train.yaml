@@ -18,3 +18,6 @@ step:
   synth_step: 1000
   val_step: 1000
   save_step: 100000
+logging:
+  project: "Convai_LTTSM"
+  run: "trial_valloss_log"

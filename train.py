@@ -1,6 +1,7 @@
 import argparse
 import os
 import wandb
+from datetime import datetime
 
 import torch
 import yaml
@@ -20,16 +21,20 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def main(args, configs):
-    wandb.init(project=args.project_name, name=args.run_name, config=configs[0])
     print("Prepare training ...")
 
     preprocess_config, model_config, train_config = configs
+    batch_size = train_config["optimizer"]["batch_size"]
+    
+    wandb_project_name = train_config["logging"]["project"]
+    wandb_run_name = str(train_config["logging"]["run"])+"_"+str(batch_size)+'_'+datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    wandb.init(project=wandb_project_name, name=wandb_run_name, config=configs[0])
 
     # Get dataset
     dataset = Dataset(
         "train.txt", preprocess_config, train_config, sort=True, drop_last=True
     )
-    batch_size = train_config["optimizer"]["batch_size"]
+   
     group_size = 4  # Set this larger than 1 to enable sorting in Dataset
     assert batch_size * group_size < len(dataset)
     loader = DataLoader(
@@ -190,13 +195,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "-t", "--train_config", type=str, required=True, help="path to train.yaml"
     )
-    parser.add_argument(
-        "-n","--project_name", type=str, required=False, help="name of the wandb project", default="FastSpeech2_training"
-    )
-    parser.add_argument(
-        "-r","--run_name", type=str, required=False, help="name of the current run for wandb logging", default="FastSpeech2_training_run"
-    )
-    
     args = parser.parse_args()
 
     # Read Config
