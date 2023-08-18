@@ -117,37 +117,37 @@ def main(args, configs):
 
                     log(train_logger, step, losses=losses, logger_stage="training")
 
-                if step % synth_step == 0:
-                    fig, wav_reconstruction, wav_prediction, tag = synth_one_sample(
-                        batch,
-                        output,
-                        vocoder,
-                        model_config,
-                        preprocess_config,
-                    )
-                    log(
-                        train_logger,
-                        fig=fig,
-                        tag="Training/step_{}_{}".format(step, tag),
-                        logger_stage="training"
-                    )
-                    sampling_rate = preprocess_config["preprocessing"]["audio"][
-                        "sampling_rate"
-                    ]
-                    log(
-                        train_logger,
-                        audio=wav_reconstruction,
-                        sampling_rate=sampling_rate,
-                        tag="Training/step_{}_{}_reconstructed".format(step, tag),
-                        logger_stage="training"
-                    )
-                    log(
-                        train_logger,
-                        audio=wav_prediction,
-                        sampling_rate=sampling_rate,
-                        tag="Training/step_{}_{}_synthesized".format(step, tag),
-                        logger_stage="training"
-                    )
+                # if step % synth_step == 0:
+                #     fig, wav_reconstruction, wav_prediction, tag = synth_one_sample(
+                #         batch,
+                #         output,
+                #         vocoder,
+                #         model_config,
+                #         preprocess_config,
+                #     )
+                #     log(
+                #         train_logger,
+                #         fig=fig,
+                #         tag="Training/step_{}_{}".format(step, tag),
+                #         logger_stage="training"
+                #     )
+                #     sampling_rate = preprocess_config["preprocessing"]["audio"][
+                #         "sampling_rate"
+                #     ]
+                #     log(
+                #         train_logger,
+                #         audio=wav_reconstruction,
+                #         sampling_rate=sampling_rate,
+                #         tag="Training/step_{}_{}_reconstructed".format(step, tag),
+                #         logger_stage="training"
+                #     )
+                #     log(
+                #         train_logger,
+                #         audio=wav_prediction,
+                #         sampling_rate=sampling_rate,
+                #         tag="Training/step_{}_{}_synthesized".format(step, tag),
+                #         logger_stage="training"
+                #     )
 
                 if step % val_step == 0:
                     model.eval()
