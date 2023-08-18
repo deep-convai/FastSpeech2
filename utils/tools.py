@@ -94,6 +94,10 @@ def log(
     log_dict = {}
     
     if losses is not None:
+        
+        if logger_stage == "validation":
+            print("log triggered for the stage : ",logger_stage)
+        
         log_dict[logger_stage + "_Loss/total_loss"] = losses[0]
         log_dict[logger_stage + "_Loss/mel_loss"] = losses[1]
         log_dict[logger_stage + "_Loss/mel_postnet_loss"] = losses[2]
