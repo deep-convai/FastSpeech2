@@ -1,5 +1,7 @@
 import argparse
 import os
+import wandb
+from datetime import datetime
 
 import torch
 import yaml
@@ -22,12 +24,17 @@ def main(args, configs):
     print("Prepare training ...")
 
     preprocess_config, model_config, train_config = configs
+    batch_size = train_config["optimizer"]["batch_size"]
+    
+    wandb_project_name = train_config["logging"]["project"]
+    wandb_run_name = str(train_config["logging"]["run"])+"_"+str(batch_size)+'_'+datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    wandb.init(project=wandb_project_name, name=wandb_run_name, config=configs[0])
 
     # Get dataset
     dataset = Dataset(
         "train.txt", preprocess_config, train_config, sort=True, drop_last=True
     )
-    batch_size = train_config["optimizer"]["batch_size"]
+   
     group_size = 4  # Set this larger than 1 to enable sorting in Dataset
     assert batch_size * group_size < len(dataset)
     loader = DataLoader(
@@ -108,36 +115,39 @@ def main(args, configs):
 
                     outer_bar.write(message1 + message2)
 
-                    log(train_logger, step, losses=losses)
+                    log(train_logger, step, losses=losses, logger_stage="training")
 
-                if step % synth_step == 0:
-                    fig, wav_reconstruction, wav_prediction, tag = synth_one_sample(
-                        batch,
-                        output,
-                        vocoder,
-                        model_config,
-                        preprocess_config,
-                    )
-                    log(
-                        train_logger,
-                        fig=fig,
-                        tag="Training/step_{}_{}".format(step, tag),
-                    )
-                    sampling_rate = preprocess_config["preprocessing"]["audio"][
-                        "sampling_rate"
-                    ]
-                    log(
-                        train_logger,
-                        audio=wav_reconstruction,
-                        sampling_rate=sampling_rate,
-                        tag="Training/step_{}_{}_reconstructed".format(step, tag),
-                    )
-                    log(
-                        train_logger,
-                        audio=wav_prediction,
-                        sampling_rate=sampling_rate,
-                        tag="Training/step_{}_{}_synthesized".format(step, tag),
-                    )
+                # if step % synth_step == 0:
+                #     fig, wav_reconstruction, wav_prediction, tag = synth_one_sample(
+                #         batch,
+                #         output,
+                #         vocoder,
+                #         model_config,
+                #         preprocess_config,
+                #     )
+                #     log(
+                #         train_logger,
+                #         fig=fig,
+                #         tag="Training/step_{}_{}".format(step, tag),
+                #         logger_stage="training"
+                #     )
+                #     sampling_rate = preprocess_config["preprocessing"]["audio"][
+                #         "sampling_rate"
+                #     ]
+                #     log(
+                #         train_logger,
+                #         audio=wav_reconstruction,
+                #         sampling_rate=sampling_rate,
+                #         tag="Training/step_{}_{}_reconstructed".format(step, tag),
+                #         logger_stage="training"
+                #     )
+                #     log(
+                #         train_logger,
+                #         audio=wav_prediction,
+                #         sampling_rate=sampling_rate,
+                #         tag="Training/step_{}_{}_synthesized".format(step, tag),
+                #         logger_stage="training"
+                #     )
 
                 if step % val_step == 0:
                     model.eval()
